@@ -12,12 +12,13 @@ YOUTUBE_KEY = os.getenv('YOUTUBE_API_KEY')
 
 word_len_cutoff = 1
 
+
 def split_comment_into_phrases(comment):
     """split on commas and semicolons, since they probably separate recommendations.
     newlines should already be split before this function is called.
     """
     # replace semicolons with commas
-    comment = comment.replace(';', ',')
+    comment = comment.replace(';', ', ').replace('. ', ', ')
     # split on commas, since they might represent different recommendations:
     return comment.split(',')
 
@@ -27,13 +28,14 @@ def approve_word(word):
     return word[0].isupper() and len(word) > word_len_cutoff
 
 
-def identify_proper_nouns(words):
-    """given a phrase, return the NNP words and those starting with upper case, since those
+def identify_proper_nouns(phrase):
+    """given a phrase, return ~the NNP words and~ those starting with upper case, since those
     have a better chance of being the names of musicians/bands/songs,
     and a lower chance of cluttering up search results
     """
-    text = word_tokenize(words)
-    return ' '.join([w for w, pos in nltk.pos_tag(text) if pos == 'NNP' or approve_word(w)])
+    text = word_tokenize(phrase)
+    # return ' '.join([w for w, pos in nltk.pos_tag(text) if pos == 'NNP' or approve_word(w)])
+    return ' '.join([w for w in text if approve_word(w)])
 
 
 def get_comments_from_page(ask_mefi_url):
@@ -41,8 +43,8 @@ def get_comments_from_page(ask_mefi_url):
     """
     page = requests.get(ask_mefi_url)
     tree = html.fromstring(page.content)
-    comments = tree.xpath('//div[@class="comments"]/text()')
-    links = tree.xpath('//div[@class="comments"]/a')
+    comments = tree.xpath('//div[@class="comments"]/text()') + tree.xpath('//div[@class="comments best"]/text()')
+    links = tree.xpath('//div[@class="comments"]/a') + tree.xpath('//div[@class="comments best"]/a')
     return comments, links
 
 
@@ -62,6 +64,15 @@ def extract_yt_video_id(url):
         v2 = re.search(shortened_url_format, url)
         if v2:
             return v2.group(1)
+
+
+def scrub_years(text):
+    """we dont care about years"""
+    year_format = r'[1|2]\d\d\d'
+    v = re.search(year_format, text)
+    if v:
+        return text.replace(v.group(0), '')
+    return text
 
 
 def get_title_from_yt_id(video_id):
@@ -94,11 +105,38 @@ def scrub_search_term(title):
         '(Video Version)',
         '(Lyrics)',
         '( Video)',
-        '.wmv'
+        '.wmv',
+        'FULL ALBUM',
+        'Full Album',
+        'YouTube',
+        '()',
+        '( )',
+        '(  )'
     ]
+    title = scrub_years(title)
+
     for word in blacklist:
-        title = title.replace(word, '').strip().strip(':')
-    return title.encode('utf-8', 'replace')
+        title = title.replace(word, '')
+
+    title = title.strip().strip(':')
+
+    #If there is just 1 word, make sure it is interesting:
+    if len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
+        return None
+
+    return title
+
+
+def track_results(rec_tracker):
+    """print the results of mining the thread"""
+    total = rec_tracker['youtube'] + rec_tracker['link_text'] + rec_tracker['comment']
+
+    print """
+    Found {} possible recommendations:
+    {} directly from comments
+    {} from YouTube video titles
+    {} from links to elsewhere on the web
+    """.format(total, rec_tracker['comment'], rec_tracker['youtube'], rec_tracker['link_text'])
 
 
 def get_recommendations(ask_mefi_url):
@@ -110,9 +148,10 @@ def get_recommendations(ask_mefi_url):
         'comment': 0,
         'link_text': 0
     }
-    # get all the comments
 
+    # get all the comments
     comments, links = get_comments_from_page(ask_mefi_url)
+
     # process text comments
     for c in comments:
         c = c.replace('\t', '').strip('\r\n').strip()
@@ -133,18 +172,11 @@ def get_recommendations(ask_mefi_url):
         elif len(link_text) > word_len_cutoff:
             recommendations.append(link_text)
             rec_tracker['link_text'] += 1
-            
-    total = rec_tracker['youtube'] + rec_tracker['link_text'] + rec_tracker['comment']
 
-    print """
-    Found {} possible recommendations:
-    {} directly from comments
-    {} from YouTube video titles
-    {} from links to elsewhere on the web
-    """.format(total, rec_tracker['comment'], rec_tracker['youtube'], rec_tracker['link_text'])
-
-    return [scrub_search_term(r) for r in recommendations]
+    track_results(rec_tracker)
+    useful_search_terms = [scrub_search_term(r) for r in recommendations]
+    return [u for u in useful_search_terms if u]
 
 
 if __name__ == '__main__':
-    pp.pprint(get_recommendations('http://ask.metafilter.com/295806'))
+    pp.pprint(get_recommendations('http://ask.metafilter.com/296503/Meditation-Music-like-Kay-Gardners-A-Rainbow-Path'))
