@@ -10,23 +10,35 @@ pp = pprint.PrettyPrinter(indent=4)
 
 YOUTUBE_KEY = os.getenv('YOUTUBE_API_KEY')
 
+word_len_cutoff = 1
 
-def identify_proper_nouns(comment):
-    """given a phrase, return only those words that might be the names of musicians/bands/songs"""
-    interesting_search_terms = []
+def split_comment_into_phrases(comment):
+    """split on commas and semicolons, since they probably separate recommendations.
+    newlines should already be split before this function is called.
+    """
     # replace semicolons with commas
     comment = comment.replace(';', ',')
     # split on commas, since they might represent different recommendations:
-    recs = comment.split(',')
-    for words in recs:
-        text = word_tokenize(words)
-        interesting_search_terms.append(
-            ' '.join([word for word, pos in nltk.pos_tag(text) if pos == 'NNP'])
-        )
-    return [a for a in interesting_search_terms if a]
+    return comment.split(',')
+
+
+def approve_word(word):
+    """Should we include this word as a search term?"""
+    return word[0].isupper() and len(word) > word_len_cutoff
+
+
+def identify_proper_nouns(words):
+    """given a phrase, return the NNP words and those starting with upper case, since those
+    have a better chance of being the names of musicians/bands/songs,
+    and a lower chance of cluttering up search results
+    """
+    text = word_tokenize(words)
+    return ' '.join([w for w, pos in nltk.pos_tag(text) if pos == 'NNP' or approve_word(w)])
 
 
 def get_comments_from_page(ask_mefi_url):
+    """get all comments (text) and links (<a href>s) from a metafilter URL
+    """
     page = requests.get(ask_mefi_url)
     tree = html.fromstring(page.content)
     comments = tree.xpath('//div[@class="comments"]/text()')
@@ -35,10 +47,12 @@ def get_comments_from_page(ask_mefi_url):
 
 
 def get_link_info(a_tag):
+    """get the link text and URL from an <a href> tag"""
     return a_tag.text, a_tag.get('href')
 
 
 def extract_yt_video_id(url):
+    """if the URL is to a YouTube video, return the video's id"""
     video_url_format = r'www.youtube.com\/watch\?v=(\w+)'
     shortened_url_format = 'http://youtu.be/(\w+)'
     v = re.search(video_url_format, url)
@@ -50,7 +64,8 @@ def extract_yt_video_id(url):
             return v2.group(1)
 
 
-def get_title_from_video_id(video_id):
+def get_title_from_yt_id(video_id):
+    """Given a YouTube video ID, return the video title"""
     if not video_id:
         return None
     url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={}&key={}'.format(video_id, YOUTUBE_KEY)
@@ -63,38 +78,10 @@ def get_title_from_video_id(video_id):
         return video_data['items'][0]['snippet']['title']
 
 
-def get_recommendations(ask_mefi_url):
-    # get all the comments
-    recommendations = []
-    recommendation_count = {
-        'youtube_title': 0,
-        'comment': 0,
-        'link_text': 0
-    }
-    comments, links = get_comments_from_page(ask_mefi_url)
-
-    for c in comments:
-        c = c.replace('\t', '').strip('\r\n').strip()
-        if c:
-            recommendations.extend(identify_proper_nouns(c))
-            recommendation_count['comment'] += 1
-
-    for link in links:
-        link_text, link_url = get_link_info(link)
-        yt_id = extract_yt_video_id(link_url)
-        linked_video_title = get_title_from_video_id(yt_id)
-        if linked_video_title:
-            recommendations.append(linked_video_title)
-            recommendation_count['youtube_title'] += 1
-        else:
-            recommendations.append(link_text)
-            recommendation_count['link_text'] += 1
-
-    return recommendations
-
-
-def scrub_song_title(title):
-    """remove common terms that wont be helpful in searches"""
+def scrub_search_term(title):
+    """remove common terms that wont be helpful in searches,
+    and generally clean search term
+    """
     blacklist = [
         'NPR Music Tiny Desk Concert',
         'NPR',
@@ -102,11 +89,62 @@ def scrub_song_title(title):
         'Official',
         '(Official Audio)',
         '- Live',
-        'www.candyrat.com'
+        'www.candyrat.com',
+        '( Audio)',
+        '(Video Version)',
+        '(Lyrics)',
+        '( Video)',
+        '.wmv'
     ]
     for word in blacklist:
-        title = title.replace(word, '').strip()
-    return title
+        title = title.replace(word, '').strip().strip(':')
+    return title.encode('utf-8', 'replace')
+
+
+def get_recommendations(ask_mefi_url):
+    """end-to-end process"""
+    # initialize variables
+    recommendations = []
+    rec_tracker = {
+        'youtube': 0,
+        'comment': 0,
+        'link_text': 0
+    }
+    # get all the comments
+
+    comments, links = get_comments_from_page(ask_mefi_url)
+    # process text comments
+    for c in comments:
+        c = c.replace('\t', '').strip('\r\n').strip()
+        for phrase in split_comment_into_phrases(c):
+            useful_words = identify_proper_nouns(phrase)
+            if useful_words:
+                recommendations.append(useful_words)
+                rec_tracker['comment'] += 1
+
+    # process <a href> links
+    for link in links:
+        link_text, link_url = get_link_info(link)
+        yt_id = extract_yt_video_id(link_url)
+        linked_video_title = get_title_from_yt_id(yt_id)
+        if linked_video_title:
+            recommendations.append(linked_video_title)
+            rec_tracker['youtube'] += 1
+        elif len(link_text) > word_len_cutoff:
+            recommendations.append(link_text)
+            rec_tracker['link_text'] += 1
+            
+    total = rec_tracker['youtube'] + rec_tracker['link_text'] + rec_tracker['comment']
+
+    print """
+    Found {} possible recommendations:
+    {} directly from comments
+    {} from YouTube video titles
+    {} from links to elsewhere on the web
+    """.format(total, rec_tracker['comment'], rec_tracker['youtube'], rec_tracker['link_text'])
+
+    return [scrub_search_term(r) for r in recommendations]
+
 
 if __name__ == '__main__':
-    pp.pprint(get_recommendations('http://ask.metafilter.com/297135/Finger-Picken'))
+    pp.pprint(get_recommendations('http://ask.metafilter.com/295806'))
