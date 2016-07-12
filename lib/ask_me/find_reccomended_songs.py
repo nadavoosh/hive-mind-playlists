@@ -6,7 +6,7 @@ from lxml import html
 import requests
 import nltk
 from nltk.tokenize import word_tokenize
-from lib.blacklist import BLACKLIST
+from lib.ask_me.blacklist import BLACKLIST
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -21,7 +21,7 @@ rec_tracker = {
 }
 
 
-class AskMetafilterQuesion(object):
+class AskMetafilterQuestion(object):
     def __init__(self, url):
         self.url = url
         self.page = requests.get(self.url)
@@ -136,12 +136,10 @@ def track_results():
     """.format(total, rec_tracker['comment'], rec_tracker['youtube'], rec_tracker['link_text'])
 
 
-def get_recommendations(ask_mefi_url):
+def get_recommendations(question):
     """end-to-end process"""
     # initialize variables
     recommendations = []
-
-    question = AskMetafilterQuesion(ask_mefi_url)
 
     # process text comments
     for c in question.get_comments():
@@ -167,7 +165,3 @@ def get_recommendations(ask_mefi_url):
     track_results()
     useful_search_terms = [scrub_search_term(r) for r in recommendations]
     return [u for u in useful_search_terms if u]
-
-
-if __name__ == '__main__':
-    pp.pprint(get_recommendations('http://ask.metafilter.com/296503/Meditation-Music-like-Kay-Gardners-A-Rainbow-Path'))
