@@ -1,12 +1,11 @@
-import pprint
+import logging
 # import spotipy.util as util
 import spotipy
-from lib.find_reccomended_songs import get_recommendations
 
+
+logger = logging.getLogger(__name__)
 # birdy_uri = 'spotify:artist:2WX2uTcsvV5OnS0inACecP'
 # spotify = spotipy.Spotify()
-
-pp = pprint.PrettyPrinter(indent=4)
 
 # def build_playlist_from_tracklist(username, track_ids):
 #     if token:
@@ -19,7 +18,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 def filter_spotify_result(item):
-    pp.pprint([a['name'] for a in item['artists']])
+    logger.info(([a['name'] for a in item['artists']]))
     return {
         'id': item.get('id'),
         'name': item.get('name'),
@@ -33,9 +32,9 @@ def get_tracks_from_recommendations(recommendations):
     tracks = []
     for rec in recommendations:
         res = sp.search(rec, type='track')
-        print 'searching for {}'.format(rec)
-        pp.pprint([filter_spotify_result(item) for item in res['tracks']['items'][:3]])
-        print '============='
+        logger.info('searching for %s', rec)
+        logger.info([filter_spotify_result(item) for item in res['tracks']['items'][:3]]
+                   )
         # tracks.append(res[0])
     return tracks
 

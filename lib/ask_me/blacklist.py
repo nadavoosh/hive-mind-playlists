@@ -1,3 +1,5 @@
+"""words to exclude from reccomendations"""
+
 BLACKLIST = [
     'NPR Music Tiny Desk Concert',
     'NPR',

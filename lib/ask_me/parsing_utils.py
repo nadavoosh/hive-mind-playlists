@@ -1,47 +1,20 @@
-import os
-import pprint
-import re
-from lxml import html
+"""
+funcitons for parsing metafilter comments
+"""
 
+import os
+import re
+import logging
 import requests
 import nltk
 from nltk.tokenize import word_tokenize
 from lib.ask_me.blacklist import BLACKLIST
 
-pp = pprint.PrettyPrinter(indent=4)
-
+# https://console.developers.google.com/apis/dashboard
 YOUTUBE_KEY = os.getenv('YOUTUBE_API_KEY')
+logger = logging.getLogger(__name__)
 
 word_len_cutoff = 1
-
-rec_tracker = {
-    'youtube': 0,
-    'comment': 0,
-    'link_text': 0
-}
-
-
-class AskMetafilterQuestion(object):
-    def __init__(self, url):
-        self.url = url
-        self.page = requests.get(self.url)
-        self.tree = html.fromstring(self.page.content)
-
-    def get_comments(self):
-        regular = self.tree.xpath('//div[@class="comments"]/text()')
-        best = self.tree.xpath('//div[@class="comments best"]/text()')
-        return regular + best
-
-    def get_links(self):
-        regular = self.tree.xpath('//div[@class="comments"]/a')
-        best = self.tree.xpath('//div[@class="comments best"]/a')
-        return regular + best
-
-    def get_tags(self):
-        pass
-
-    def create_title(self):
-        pass
 
 
 def split_comment_into_phrases(comment):
@@ -90,6 +63,7 @@ def extract_yt_video_id(url):
 def scrub_years(text):
     """we don't care about years in song titles"""
     year_format = r'[1|2]\d\d\d'
+    print text
     v = re.search(year_format, text)
     if v:
         return text.replace(v.group(0), '')
@@ -124,44 +98,4 @@ def scrub_search_term(title):
     return title
 
 
-def track_results():
-    """print the results of mining the thread"""
-    total = rec_tracker['youtube'] + rec_tracker['link_text'] + rec_tracker['comment']
 
-    print """
-    Found {} possible recommendations:
-    {} directly from comments
-    {} from YouTube video titles
-    {} from links to elsewhere on the web
-    """.format(total, rec_tracker['comment'], rec_tracker['youtube'], rec_tracker['link_text'])
-
-
-def get_recommendations(question):
-    """end-to-end process"""
-    # initialize variables
-    recommendations = []
-
-    # process text comments
-    for c in question.get_comments():
-        c = c.replace('\t', '').strip('\r\n').strip()
-        for phrase in split_comment_into_phrases(c):
-            useful_words = identify_proper_nouns(phrase)
-            if useful_words:
-                recommendations.append(useful_words)
-                rec_tracker['comment'] += 1
-
-    # process <a href> links
-    for link in question.get_links():
-        link_text, link_url = get_link_info(link)
-        yt_id = extract_yt_video_id(link_url)
-        linked_video_title = get_title_from_yt_id(yt_id)
-        if linked_video_title:
-            recommendations.append(linked_video_title)
-            rec_tracker['youtube'] += 1
-        elif len(link_text) > word_len_cutoff:
-            recommendations.append(link_text)
-            rec_tracker['link_text'] += 1
-
-    track_results()
-    useful_search_terms = [scrub_search_term(r) for r in recommendations]
-    return [u for u in useful_search_terms if u]
