@@ -1,0 +1,10 @@
+<!doctype html>
+<title>Song Suggestions</title>
+<body>
+    <h1>Song Recs Identified from <a href={{ question.url }}>this</a> question: </h1>
+    <ul id="navigation">
+    {% for item in items %}
+        <li><a href={{ item.uri }}>{{ item }}</a></li>
+    {% endfor %}
+    </ul>
+</body>

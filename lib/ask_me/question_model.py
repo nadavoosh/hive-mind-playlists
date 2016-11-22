@@ -35,7 +35,7 @@ class AskMetafilterQuestion(object):
         """.format(
             total=len(self.recommendations),
             source=self.url,
-            comments=len([r for r in self.recommendations if r.source == 'comments']),
+            comments=len([r for r in self.recommendations if r.source == 'comment']),
             youtube=len([r for r in self.recommendations if r.source == 'youtube']),
             elsewhere=len([r for r in self.recommendations if r.source == 'link_text'])
             )
@@ -76,6 +76,5 @@ class AskMetafilterQuestion(object):
         self.process_comments()
         self.process_links()
         logger.info(self)
-        print self.recommendations
         useful_search_terms = [pu.scrub_search_term(r.text) for r in self.recommendations]
         return [u for u in useful_search_terms if u]

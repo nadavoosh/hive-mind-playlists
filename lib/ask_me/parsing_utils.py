@@ -44,7 +44,7 @@ def identify_proper_nouns(phrase):
 
 def get_link_info(a_tag):
     """get the link text and URL from an <a href> tag"""
-    return a_tag.text, a_tag.get('href')
+    return a_tag.text or '', a_tag.get('href') or ''
 
 
 def extract_yt_video_id(url):

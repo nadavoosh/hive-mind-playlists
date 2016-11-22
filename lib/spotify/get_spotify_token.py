@@ -9,3 +9,5 @@ def get_token(username):
         return spotipy.Spotify(auth=token)
     else:
         print "Can't get token for", username
+
+# https://github.com/drshrey/spotify-flask-auth-example/blob/master/main.py
