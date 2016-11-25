@@ -3,12 +3,18 @@ a model for an askMe question, with answers and comments
 """
 
 import logging
+import re
 from lxml import html
 
 import requests
 import lib.ask_me.parsing_utils as pu
 
 logger = logging.getLogger(__name__)
+
+
+RANDOM_ASKME_URL = 'http://ask.metafilter.com/random'
+BASE_ASKME_URL = 'http://ask.metafilter.com/{}/'
+ASKME_URL_PATTERN = r'^((http|https):\/\/|)ask\.metafilter\.com\/([0-9]+)'
 
 
 class Reccomendation(object):
@@ -19,26 +25,15 @@ class Reccomendation(object):
     def __str__(self):
         return self.text
 
+
 class AskMetafilterQuestion(object):
     def __init__(self, url):
         self.url = url
         self.page = requests.get(self.url)
         self.tree = html.fromstring(self.page.content)
-        self.recommendations = [] # this will hold the reccomendations
-
-    def __str__(self):
-        return """
-        {total} total Reccomendations from {source}:
-        {comments} directly from comments
-        {youtube} from YouTube video titles
-        {elsewhere} from links to elsewhere on the web
-        """.format(
-            total=len(self.recommendations),
-            source=self.url,
-            comments=len([r for r in self.recommendations if r.source == 'comment']),
-            youtube=len([r for r in self.recommendations if r.source == 'youtube']),
-            elsewhere=len([r for r in self.recommendations if r.source == 'link_text'])
-            )
+        self.posttitle = self.tree.xpath('//h1[@class="posttitle"]/text()')[0]
+        self.alphanumeric_posttitle = re.sub(r'\W+', '', self.posttitle)
+        self.recommendations = []  # this will hold the recommendations
 
     def get_comments(self):
         regular = self.tree.xpath('//div[@class="comments"]/text()')
@@ -70,11 +65,13 @@ class AskMetafilterQuestion(object):
             elif len(link_text) > pu.word_len_cutoff:
                 self.recommendations.append(Reccomendation(link_text, 'link_text'))
 
-
     def get_recommendations(self):
         """end-to-end process"""
         self.process_comments()
         self.process_links()
-        logger.info(self)
         useful_search_terms = [pu.scrub_search_term(r.text) for r in self.recommendations]
+        logger.info("%s total recommendations from %s", len(self.recommendations), self.url)
+        logger.info("%s recommendations directly from comments", len([r for r in self.recommendations if r.source == 'comment']))
+        logger.info("%s recommendations from YouTube video titles", len([r for r in self.recommendations if r.source == 'youtube']))
+        logger.info("%s recommendations links to elsewhere on the web", len([r for r in self.recommendations if r.source == 'link_text']))
         return [u for u in useful_search_terms if u]

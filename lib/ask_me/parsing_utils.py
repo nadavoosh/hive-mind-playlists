@@ -1,5 +1,5 @@
 """
-funcitons for parsing metafilter comments
+functions for parsing metafilter comments
 """
 
 import os
@@ -12,6 +12,9 @@ from lib.ask_me.blacklist import BLACKLIST
 
 # https://console.developers.google.com/apis/dashboard
 YOUTUBE_KEY = os.getenv('YOUTUBE_API_KEY')
+if not YOUTUBE_KEY:
+    raise Exception('YOUTUBE_API_KEY required')
+
 logger = logging.getLogger(__name__)
 
 word_len_cutoff = 1
@@ -63,7 +66,6 @@ def extract_yt_video_id(url):
 def scrub_years(text):
     """we don't care about years in song titles"""
     year_format = r'[1|2]\d\d\d'
-    print text
     v = re.search(year_format, text)
     if v:
         return text.replace(v.group(0), '')
@@ -96,6 +98,3 @@ def scrub_search_term(title):
     if len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
         return None
     return title
-
-
-

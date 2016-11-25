@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<h1>Oops</h1>
+<p> The URL <b>{{ url }}</b> doesn't look like an ask metafilter question to me.</p>
+<p>Try something like <b>{{ sample_url }}</b> </p>
+{% endblock %}

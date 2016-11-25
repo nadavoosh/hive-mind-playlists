@@ -1,27 +1,18 @@
 import logging
-# import spotipy.util as util
 import spotipy
-
 
 logger = logging.getLogger(__name__)
 
-# def build_playlist_from_tracklist(username, track_ids):
-#     if token:
-#         sp = spotipy.Spotify(auth=token)
-#         sp.trace = False
-#         results = sp.user_playlist_add_tracks(username, playlist_id, track_ids)
-#         print results
-#     else:
-#         print "Can't get token for", username
 
+BASE_SPOTIFY_URL = "https://embed.spotify.com/?uri=spotify:trackset:{title}:{tracks}"
 
 class Track(object):
     def __init__(self, kwargs):
         self.id = kwargs['id']
-        self.name = kwargs['name']
+        self.name = kwargs['name'].encode('ascii', 'ignore').decode('ascii')
         self.popularity = kwargs['popularity']
-        self.uri = kwargs['uri']
-        self.artists = ', '.join([a['name'] for a in kwargs['artists']])
+        self.uri = kwargs['uri'].encode('ascii', 'ignore').decode('ascii')
+        self.artists = ', '.join([a['name'].encode('ascii', 'ignore').decode('ascii') for a in kwargs['artists']])
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.artists)

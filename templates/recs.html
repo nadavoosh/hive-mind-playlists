@@ -1,10 +1,21 @@
-<!doctype html>
-<title>Song Suggestions</title>
-<body>
-    <h1>Song Recs Identified from <a href={{ question.url }}>this</a> question: </h1>
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+<style type="text/css">
+</style>
+{% endblock %}
+{% block content %}
+{% if items|length > 1 %}
+    <h1>Song recommendations from <a href={{ question.url }}>{{ question.posttitle }}</a></h1>
+    <iframe src={{ srclink }} width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
+<p> I found {{ items|length }} songs reccomended in that thread:</p>
     <ul id="navigation">
-    {% for item in items %}
+        {% for item in items %}
         <li><a href={{ item.uri }}>{{ item }}</a></li>
-    {% endfor %}
+        {% endfor %}
     </ul>
-</body>
+{% else %}
+    <p>Damn, I found nothing for that link, sorry!</p>
+{% endif %}
+{% endblock %}

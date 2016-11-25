@@ -3,7 +3,6 @@ import mock
 from lib.ask_me.question_model import AskMetafilterQuestion
 
 
-
 class TestAskMeQuestions(unittest.TestCase):
     """Unit tests for askmetafilter questions"""
     def setUp(self):
@@ -11,7 +10,7 @@ class TestAskMeQuestions(unittest.TestCase):
         self.question = AskMetafilterQuestion(self.url)
 
     def test_reccomendations(self):
-        """get reccomendations for the sample question"""
+        """get recommendations for the sample question"""
         expected = [
             'Robert Rich',
             'You Popol Vuh',
