@@ -2,18 +2,14 @@
 functions for parsing metafilter comments
 """
 
-import os
 import re
 import logging
 import requests
 import nltk
 from nltk.tokenize import word_tokenize
 from lib.ask_me.blacklist import BLACKLIST
+from config import YOUTUBE_KEY
 
-# https://console.developers.google.com/apis/dashboard
-YOUTUBE_KEY = os.getenv('YOUTUBE_API_KEY')
-if not YOUTUBE_KEY:
-    raise Exception('YOUTUBE_API_KEY required')
 
 logger = logging.getLogger(__name__)
 

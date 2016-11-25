@@ -1,5 +1,4 @@
 import unittest
-import mock
 from lib.ask_me.question_model import AskMetafilterQuestion
 
 

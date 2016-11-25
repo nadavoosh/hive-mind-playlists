@@ -4,6 +4,10 @@ import requests
 from flask import Flask
 from flask import request
 from flask import render_template
+
+import os
+import sys
+sys.path.append(os.path.abspath("."))
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
 from lib.spotify.build_spotify_playlist import get_tracks_from_recommendations, BASE_SPOTIFY_URL
 
@@ -44,3 +48,6 @@ def my_form_post():
         tracks=','.join([t.id for t in tracks])
     )
     return render_template('recs.html', items=tracks, question=q, srclink=srclink)
+
+if __name__ == '__main__':
+    app.run()
