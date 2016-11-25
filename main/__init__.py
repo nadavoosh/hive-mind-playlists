@@ -1,4 +1,3 @@
-
 import logging
 import re
 import requests
@@ -8,11 +7,20 @@ from flask import render_template
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
 from lib.spotify.build_spotify_playlist import get_tracks_from_recommendations, BASE_SPOTIFY_URL
 
-
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
-app = Flask(__name__)
 
+class WebFactionMiddleware(object):
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        environ['SCRIPT_NAME'] = '/hivemindplaylists'
+        return self.app(environ, start_response)
+
+app = Flask(__name__)
+app.wsgi_app = WebFactionMiddleware(app.wsgi_app)
 
 @app.route('/')
 def my_form():
@@ -36,7 +44,3 @@ def my_form_post():
         tracks=','.join([t.id for t in tracks])
     )
     return render_template('recs.html', items=tracks, question=q, srclink=srclink)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

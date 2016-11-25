@@ -42,56 +42,20 @@ body {
     color: #fff;
 }
 
-.brand-title,
-.brand-tagline {
+.side-title,
+.side-tagline {
     margin: 0;
 }
-.brand-tagline {
+.side-tagline {
     font-weight: 500;
     color: rgb(176, 202, 219);
 }
 
-.nav-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.nav-item {
-    display: inline-block;
-    *display: inline;
-    zoom: 1;
-}
-.nav-item a {
-    background: transparent;
-    border: 2px solid rgb(176, 202, 219);
-    color: #fff;
-    margin-top: 1em;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    font-size: 85%;
-}
-.nav-item a:hover,
-.nav-item a:focus {
-    border: 2px solid rgb(61, 146, 201);
-    text-decoration: none;
-}
 
 .content {
     padding: 2em 1em 0;
 }
 
-.footer {
-    text-align: center;
-    padding: 1em 0;
-}
-.footer a {
-    color: #ccc;
-    font-size: 80%;
-}
-.footer .pure-menu a:hover,
-.footer .pure-menu a:focus {
-    background: none;
-}
 
 @media (min-width: 48em) {
     .main {
@@ -106,9 +70,10 @@ body {
     }
 
     .sidebar {
-        position: absolute;
+        position: fixed;
         top: 0;
         bottom: 0;
+        left: 0;
     }
 
     .content {
