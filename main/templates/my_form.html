@@ -13,8 +13,8 @@
 <p>
     Enter the URL of the Ask Metafilter question you'd like to scan for song recommendations.
 </p>
-<form action="." method="POST">
-    <input type="url" name="ask_me_url" >
+<form action="." method="POST" novalidate>
+    <input type="url" size="80" name="ask_me_url" required>
     <input type="submit" name="my-form" value="Build Playlist" onclick="showLoadingMessage">
 </form>
 {% endblock %}

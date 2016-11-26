@@ -24,7 +24,6 @@ class WebFactionMiddleware(object):
         return self.app(environ, start_response)
 
 app = Flask(__name__)
-app.wsgi_app = WebFactionMiddleware(app.wsgi_app)
 
 @app.route('/')
 def my_form():
@@ -50,4 +49,7 @@ def my_form_post():
     return render_template('recs.html', items=tracks, question=q, srclink=srclink)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
+else:
+    app.wsgi_app = WebFactionMiddleware(app.wsgi_app)
+
