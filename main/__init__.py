@@ -39,8 +39,14 @@ def my_form_post():
         logger.warn('Got a non-askmetafilter URL: %s', _url)
         sample_url = requests.get(RANDOM_ASKME_URL).url
         return render_template('sorry.html', url=_url, sample_url=sample_url)
-
-    q = AskMetafilterQuestion(BASE_ASKME_URL.format(url_match.group(3)))
+    ask_me_id = url_match.group(3)
+    try:
+        logger.debug('Identified AskMeId %s', ask_me_id)
+        q = AskMetafilterQuestion(BASE_ASKME_URL.format(ask_me_id))
+    except IndexError:
+        logger.warn('Got an IndexError for AskMeId %s, which is expected for AskMe URLs that
+        are no longer valid.', ask_me_id)
+        return render_template('sorry.html', url=_url, sample_url=sample_url)
     tracks = get_tracks_from_recommendations(q.get_recommendations())
     logger.debug('Creating playlist with %s tracks from url', len(tracks))
     srclink = BASE_SPOTIFY_URL.format(
