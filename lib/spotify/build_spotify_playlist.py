@@ -25,8 +25,9 @@ def get_tracks_from_recommendations(recommendations):
     sp = spotipy.Spotify()
     tracks = []
     for rec in recommendations:
-        logger.info('searching for %s', rec)
+        logger.info('searching spotify for %s', rec)
         res = sp.search(rec, type='track')['tracks']['items']
         if res:
+            logger.info('found %s tracks', len(res))
             tracks.append(Track(res[0]))
     return tracks
