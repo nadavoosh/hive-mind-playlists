@@ -11,3 +11,6 @@ Then just run
 python main/__init__.py
 ``` 
 to start the local flask server. 
+
+## Tests
+`make style` and `make test` should work, but I'm behind on enforcing those. 
