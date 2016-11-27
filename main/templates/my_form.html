@@ -15,6 +15,19 @@
 </p>
 <form action="." method="POST" novalidate>
     <input type="url" size="80" name="ask_me_url" required>
-    <input type="submit" name="my-form" value="Build Playlist" onclick="showLoadingMessage">
+    <input type="submit" name="my-form" value="Build Playlist">
 </form>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+    $(function() {
+        $body = $("body");
+
+        // Initiates an AJAX request on click
+        $("input[name='my-form']").click(function(){
+            $body.addClass("loading");
+        });
+
+    });
+</script>
+<div class="modal"></div>
 {% endblock %}
