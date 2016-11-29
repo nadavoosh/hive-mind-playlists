@@ -48,10 +48,12 @@ class AskMetafilterQuestion(object):
     def process_comments(self):
         """process text comments"""
         for c in self.get_comments():
+            logger.debug('parsing comment: %s', c)
             c = c.replace('\t', '').strip('\r\n').strip()
             for phrase in pu.split_comment_into_phrases(c):
                 useful_words = pu.identify_proper_nouns(phrase)
                 if useful_words:
+                    logger.debug('found useful words: %s', useful_words)
                     self.recommendations.append(Reccomendation(useful_words, 'comment'))
 
     def process_links(self):
@@ -61,8 +63,10 @@ class AskMetafilterQuestion(object):
             yt_id = pu.extract_yt_video_id(link_url)
             linked_video_title = pu.get_title_from_yt_id(yt_id)
             if linked_video_title:
+                logger.debug('found youtube title from comment: %s', linked_video_title)
                 self.recommendations.append(Reccomendation(linked_video_title, 'youtube'))
             elif len(link_text) > pu.word_len_cutoff:
+                logger.debug('defaulted to link text: %s', link_text)
                 self.recommendations.append(Reccomendation(link_text, 'link_text'))
 
     def get_recommendations(self):

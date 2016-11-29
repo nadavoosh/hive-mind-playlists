@@ -37,7 +37,6 @@ def identify_proper_nouns(phrase):
     and a lower chance of cluttering up search results
     """
     text = word_tokenize(phrase)
-    # return ' '.join([w for w, pos in nltk.pos_tag(text) if pos == 'NNP' or approve_word(w)])
     return ' '.join([w for w in text if approve_word(w)])
 
 
@@ -86,11 +85,15 @@ def scrub_search_term(title):
     """remove common terms that wont be helpful in searches,
     and generally clean search term
     """
+    logger.debug('scrubbing: %s', title)
     title = scrub_years(title)
     for word in BLACKLIST:
-        title = title.replace(word, '')
+        if word in title:
+            logger.debug('found blacklisted word %s, removing', word)
+            title = title.replace(word, '')
     title = title.strip().strip(':')
     #If there is just 1 word, make sure it is interesting:
-    if len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
+    if title and len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
+        logger.debug('%s was not interesting enough to include', title)
         return None
     return title
