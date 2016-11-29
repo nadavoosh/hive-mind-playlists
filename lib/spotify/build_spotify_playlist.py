@@ -39,6 +39,10 @@ def get_tracks_from_recommendations(recommendations):
         logger.info('searching spotify for %s', rec)
         res = sp.search(rec, type='track')['tracks']['items']
         if res:
-            logger.info('found %s tracks', len(res))
-            tracks.append(Track(res[0]))
+            existing_track_ids = [t.id for t in tracks]
+            new_tracks = [song for song in res if song['id'] not in existing_track_ids]
+            logger.info('found %s tracks', len(new_tracks))
+            track_to_add = Track(new_tracks[0])
+            logger.info('Adding %s to playlist', track_to_add)
+            tracks.append(track_to_add)
     return tracks
