@@ -27,8 +27,8 @@ def get_tracks_from_recommendations(recommendations):
     sp = spotipy.Spotify()
     tracks = []
     for rec in recommendations:
-        logger.info('searching spotify for %s', rec.lower())
-        res = sp.search(rec.lower(), type='track')['tracks']['items']
+        logger.info('searching spotify for %s', rec)
+        res = sp.search(rec, type='track')['tracks']['items']
         existing_track_ids = [t.id for t in tracks]
         new_tracks = [song for song in res if song['id'] not in existing_track_ids]
         if new_tracks:

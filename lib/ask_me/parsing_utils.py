@@ -96,4 +96,4 @@ def scrub_search_term(title):
     if title and len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
         logger.debug('%s was not interesting enough to include', title)
         return None
-    return title
+    return title.lower()
