@@ -21,23 +21,14 @@ class Track(object):
         return self.id + self.name + self.artists
 
 
-def filter_search_terms(search_term):
-    """Spotify API doesn't seem to like it when you search for a logical term
-    see https://github.com/spotify/web-api/issues/368
-    """
-    badwords = ['not', 'and', 'or', 'if']
-    return [word for word in search_term if word.lower() not in badwords]
-
-
 def get_tracks_from_recommendations(recommendations):
     """get one spotify track per recommendation from a list of recommendations
     """
     sp = spotipy.Spotify()
     tracks = []
     for rec in recommendations:
-        rec = filter_search_terms(rec)
-        logger.info('searching spotify for %s', rec)
-        res = sp.search(rec, type='track')['tracks']['items']
+        logger.info('searching spotify for %s', rec.lower())
+        res = sp.search(rec.lower(), type='track')['tracks']['items']
         existing_track_ids = [t.id for t in tracks]
         new_tracks = [song for song in res if song['id'] not in existing_track_ids]
         if new_tracks:
