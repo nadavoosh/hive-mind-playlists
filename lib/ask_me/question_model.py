@@ -54,7 +54,8 @@ class AskMetafilterQuestion(object):
                 useful_words = pu.identify_proper_nouns(phrase)
                 if useful_words:
                     logger.debug('found useful words: %s', useful_words)
-                    self.recommendations.append(Reccomendation(useful_words, 'comment'))
+                    self.recommendations.append(
+                        Reccomendation(useful_words, 'comment'))
 
     def process_links(self):
         """process <a href> links"""
@@ -63,19 +64,29 @@ class AskMetafilterQuestion(object):
             yt_id = pu.extract_yt_video_id(link_url)
             linked_video_title = pu.get_title_from_yt_id(yt_id)
             if linked_video_title:
-                logger.debug('found youtube title from comment: %s', linked_video_title)
-                self.recommendations.append(Reccomendation(linked_video_title, 'youtube'))
+                logger.debug(
+                    'found youtube title from comment: %s',
+                    linked_video_title)
+                self.recommendations.append(
+                    Reccomendation(linked_video_title, 'youtube'))
             elif len(link_text) > pu.word_len_cutoff:
                 logger.debug('defaulted to link text: %s', link_text)
-                self.recommendations.append(Reccomendation(link_text, 'link_text'))
+                self.recommendations.append(
+                    Reccomendation(link_text, 'link_text'))
 
     def get_recommendations(self):
         """end-to-end process"""
         self.process_comments()
         self.process_links()
-        useful_search_terms = [pu.scrub_search_term(r.text) for r in self.recommendations]
-        logger.info("%s total recommendations from %s", len(self.recommendations), self.url)
-        logger.info("%s recommendations directly from comments", len([r for r in self.recommendations if r.source == 'comment']))
-        logger.info("%s recommendations from YouTube video titles", len([r for r in self.recommendations if r.source == 'youtube']))
-        logger.info("%s recommendations links to elsewhere on the web", len([r for r in self.recommendations if r.source == 'link_text']))
+        useful_search_terms = [
+            pu.scrub_search_term(
+                r.text) for r in self.recommendations]
+        logger.info("%s total recommendations from %s",
+                    len(self.recommendations), self.url)
+        logger.info("%s recommendations directly from comments", len(
+            [r for r in self.recommendations if r.source == 'comment']))
+        logger.info("%s recommendations from YouTube video titles", len(
+            [r for r in self.recommendations if r.source == 'youtube']))
+        logger.info("%s recommendations links to elsewhere on the web", len(
+            [r for r in self.recommendations if r.source == 'link_text']))
         return [u for u in useful_search_terms if u]

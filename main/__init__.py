@@ -13,8 +13,8 @@ from lib.spotify.build_spotify_playlist import get_tracks_from_recommendations, 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-class WebFactionMiddleware(object):
 
+class WebFactionMiddleware(object):
     def __init__(self, app):
         self.app = app
 
@@ -22,7 +22,9 @@ class WebFactionMiddleware(object):
         environ['SCRIPT_NAME'] = '/hivemindplaylists'
         return self.app(environ, start_response)
 
+
 app = Flask(__name__)
+
 
 @app.route('/')
 def my_form():
@@ -44,7 +46,9 @@ def my_form_post():
         logger.debug('Identified AskMeId %s', ask_me_id)
         q = AskMetafilterQuestion(BASE_ASKME_URL.format(ask_me_id))
     except IndexError:
-        logger.warn('Got an IndexError for AskMeId %s, which is expected for AskMe URLs that are no longer valid.', ask_me_id)
+        logger.warn(
+            'Got an IndexError for AskMeId %s, which is expected for AskMe URLs that are no longer valid.',
+            ask_me_id)
         return render_template('missing.html', url=_url)
     tracks = get_tracks_from_recommendations(q.get_recommendations())
     logger.debug('Creating playlist with %s tracks from url', len(tracks))
@@ -53,7 +57,12 @@ def my_form_post():
         tracks=','.join([t.id for t in tracks])
     )
     logger.debug('Writing with srclink %s', srclink)
-    return render_template('recs.html', items=tracks, question=q, srclink=srclink)
+    return render_template(
+        'recs.html',
+        items=tracks,
+        question=q,
+        srclink=srclink)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

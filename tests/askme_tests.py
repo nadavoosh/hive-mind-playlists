@@ -27,4 +27,4 @@ class TestAskMeQuestions(unittest.TestCase):
 
     def test_reccomendations(self):
         """get recommendations for the sample question"""
-        self.assertEqual(self.question.get_recommendations(), expected)
+        self.assertEqual(self.question.get_recommendations(), [e.lower() for e in expected])

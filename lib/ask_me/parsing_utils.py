@@ -71,7 +71,8 @@ def get_title_from_yt_id(video_id):
     """Given a YouTube video ID, return the video title"""
     if not video_id:
         return None
-    url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={}&key={}'.format(video_id, YOUTUBE_KEY)
+    url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={}&key={}'.format(
+        video_id, YOUTUBE_KEY)
     r = requests.get(url)
     if r.status_code != 200:
         raise Exception('Got a {} error when trying to GET the title of {}: {}'
@@ -92,7 +93,7 @@ def scrub_search_term(title):
             logger.debug('found blacklisted word %s, removing', word)
             title = title.replace(word, '')
     title = title.strip().strip(':')
-    #If there is just 1 word, make sure it is interesting:
+    # If there is just 1 word, make sure it is interesting:
     if title and len(title.split(' ')) == 1 and nltk.pos_tag([title]) != 'NNP':
         logger.debug('%s was not interesting enough to include', title)
         return None
