@@ -7,7 +7,7 @@ import re
 from lxml import html
 
 import requests
-import lib.ask_me.parsing_utils as pu
+import parsing_utils as pu
 
 logger = logging.getLogger(__name__)
 
@@ -74,19 +74,23 @@ class AskMetafilterQuestion(object):
                 self.recommendations.append(
                     Reccomendation(link_text, 'link_text'))
 
-    def get_recommendations(self):
-        """end-to-end process"""
+    def parse_all_recommendations(self):
+        """parse all comments and links"""
         self.process_comments()
         self.process_links()
+        logger.info("%s total recommendations from %s",
+                    len(self.recommendations), self.url)
+        logger.debug("%s recommendations directly from comments", len(
+            [r for r in self.recommendations if r.source == 'comment']))
+        logger.debug("%s recommendations from YouTube video titles", len(
+            [r for r in self.recommendations if r.source == 'youtube']))
+        logger.debug("%s recommendations links to elsewhere on the web", len(
+            [r for r in self.recommendations if r.source == 'link_text']))
+
+    def get_recommendations(self):
+        """end-to-end processing and filtering of comments"""
+        self.parse_all_recommendations()
         useful_search_terms = [
             pu.scrub_search_term(
                 r.text) for r in self.recommendations]
-        logger.info("%s total recommendations from %s",
-                    len(self.recommendations), self.url)
-        logger.info("%s recommendations directly from comments", len(
-            [r for r in self.recommendations if r.source == 'comment']))
-        logger.info("%s recommendations from YouTube video titles", len(
-            [r for r in self.recommendations if r.source == 'youtube']))
-        logger.info("%s recommendations links to elsewhere on the web", len(
-            [r for r in self.recommendations if r.source == 'link_text']))
         return [u for u in useful_search_terms if u]
