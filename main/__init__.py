@@ -25,7 +25,7 @@ class WebFactionMiddleware(object):
 app = Flask(__name__)
 sp = SpotifyConnection(
     os.getenv('SPOTIFY_CLIENT_ID'),
-    os.getenv('SPOTIFY_CLIENT_SECREt')
+    os.getenv('SPOTIFY_CLIENT_SECRET')
 )
 
 
