@@ -5,6 +5,7 @@ from .askme_tests import expected
 
 class TestAskMeQuestions(unittest.TestCase):
     """Unit tests for askmetafilter questions"""
+
     def setUp(self):
         self.recs = expected
 
