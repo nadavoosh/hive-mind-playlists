@@ -8,7 +8,6 @@
 {% block content %}
 {% if items|length > 1 %}
     <h1>Song recommendations from <a href={{ question.url }}>{{ question.posttitle }}</a></h1>
-    <iframe src={{ srclink }} width="300" height="380" frameborder="0" allowtransparency="true"></iframe>
 <p> I found {{ items|length }} songs reccomended in that thread:</p>
     <ul id="navigation">
         {% for item in items %}
