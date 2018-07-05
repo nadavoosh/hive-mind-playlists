@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath("."))
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
 from lib.spotify.connection import SpotifyConnection
 from lib.spotify.playlist import SpotifyPlaylist
+from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -24,8 +25,8 @@ class WebFactionMiddleware(object):
 
 app = Flask(__name__)
 sp = SpotifyConnection(
-    os.getenv('SPOTIFY_CLIENT_ID'),
-    os.getenv('SPOTIFY_CLIENT_SECRET')
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET
 )
 
 
