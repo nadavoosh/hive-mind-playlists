@@ -32,8 +32,8 @@ sp = SpotifyConnection(
 
 
 @app.route('/')
-def my_form():
-    return render_template('my_form.html')
+def question_input():
+    return render_template('home.html')
 
 
 @app.route('/songs/<int:ask_me_id>')
@@ -58,7 +58,7 @@ def get_recs(ask_me_id):
         srclink=srclink)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/search', methods=['POST'])
 def hit_button():
     _url = request.form['ask_me_url'].lower()
     logger.debug('got URL input: %s', _url)
@@ -72,7 +72,6 @@ def hit_button():
             sample_url=requests.get(RANDOM_ASKME_URL).url)
     ask_me_id = url_match.group(3)
     return redirect(url_for('get_recs', ask_me_id=ask_me_id))
-
 
 @app.route('/playlist/redirect')
 def redirect_for_playlist():
@@ -88,7 +87,6 @@ def redirect_for_playlist():
     }
     return redirect(
         'https://accounts.spotify.com/authorize?{}'.format(urllib.urlencode(qstr)))
-
 
 @app.route('/playlist/create')
 def create_playlist():
