@@ -7,7 +7,7 @@
 {% endblock %}
 {% block content %}
 {% if items|length > 1 %}
-    <h1>Song recommendations from <a href={{ question.url }}>{{ question.posttitle }}</a></h1>
+    <h1>Playlist from <a href={{ question.url }}>{{ question.posttitle }}</a></h1>
 <p> I found {{ items|length }} songs reccomended in that thread:</p>
     <ul id="navigation">
         {% for item in items %}

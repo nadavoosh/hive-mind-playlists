@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import requests
+import urllib
 from flask import Flask, request, render_template, redirect, url_for
 sys.path.append(os.path.abspath("."))
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
@@ -71,6 +72,31 @@ def hit_button():
             sample_url=requests.get(RANDOM_ASKME_URL).url)
     ask_me_id = url_match.group(3)
     return redirect(url_for('get_recs', ask_me_id=ask_me_id))
+
+
+@app.route('/playlist/redirect')
+def redirect_for_playlist():
+    client_id = '4b63addadc0a4b45b0ae1f78531c2046'
+    redirect_uri = 'http://localhost:5000//playlist/create'
+    scopes = 'playlist-modify-public'
+    qstr = {
+        'client_id': client_id,
+        'redirect_uri': redirect_uri,
+        'scope': scopes,
+        'response_type': 'token',
+        # 'state': ask_me_id
+    }
+    return redirect(
+        'https://accounts.spotify.com/authorize?{}'.format(urllib.urlencode(qstr)))
+
+
+@app.route('/playlist/create')
+def create_playlist():
+    error = request.args.get('error')
+    if error:
+        return render_template('spotify_error.html', error=error)
+    authorization_code = request.args.get('code')
+    state = request.args.get('state')
 
 
 if __name__ == '__main__':
