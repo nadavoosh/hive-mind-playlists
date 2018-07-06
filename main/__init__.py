@@ -1,4 +1,5 @@
 import logging
+from app import app
 
 
 class WebFactionMiddleware(object):
