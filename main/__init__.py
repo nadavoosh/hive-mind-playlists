@@ -31,8 +31,8 @@ sp = SpotifyConnection(
 
 
 @app.route('/')
-def my_form():
-    return render_template('my_form.html')
+def question_input():
+    return render_template('search.html')
 
 
 @app.route('/songs/<int:ask_me_id>')
