@@ -4,6 +4,7 @@ import re
 import sys
 import requests
 from flask import Flask, request, render_template, redirect, url_for
+from flask_sslify import SSLify
 sys.path.append(os.path.abspath("."))
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
 from lib.spotify.connection import SpotifyConnection
@@ -24,6 +25,7 @@ class WebFactionMiddleware(object):
 
 
 app = Flask(__name__)
+sslify = SSLify(app)
 sp = SpotifyConnection(
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET
