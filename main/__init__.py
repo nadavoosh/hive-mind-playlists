@@ -32,7 +32,7 @@ sp = SpotifyConnection(
 
 @app.route('/')
 def question_input():
-    return render_template('search.html')
+    return render_template('home.html')
 
 
 @app.route('/songs/<int:ask_me_id>')
@@ -57,7 +57,7 @@ def get_recs(ask_me_id):
         srclink=srclink)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/search', methods=['POST'])
 def hit_button():
     _url = request.form['ask_me_url'].lower()
     logger.debug('got URL input: %s', _url)
