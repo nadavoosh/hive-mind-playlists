@@ -72,7 +72,6 @@ def hit_button():
     ask_me_id = url_match.group(3)
     return redirect(url_for('get_recs', ask_me_id=ask_me_id))
 
-
 if __name__ == '__main__':
     app.run(debug=True)
 else:
