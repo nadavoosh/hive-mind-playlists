@@ -4,7 +4,7 @@ import re
 import sys
 import requests
 import urllib
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, make_response
 sys.path.append(os.path.abspath("."))
 from lib.ask_me.question_model import AskMetafilterQuestion, BASE_ASKME_URL, RANDOM_ASKME_URL, ASKME_URL_PATTERN
 from lib.spotify.connection import SpotifyConnection
@@ -13,7 +13,7 @@ from config import SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
+COOKIE_NAME = 'playlist_uris'
 
 class WebFactionMiddleware(object):
     def __init__(self, app):
@@ -49,13 +49,14 @@ def get_recs(ask_me_id):
         return render_template('missing.html', url=url)
 
     tracks = sp.get_tracks_from_recommendations(q.get_recommendations())
-    logger.debug('Creating playlist with %s tracks from url', (tracks))
-    srclink = SpotifyPlaylist(q.alphanumeric_posttitle, tracks).embed_link
-    return render_template(
+    logger.debug('Creating playlist with %s tracks from url', len(tracks))
+    response = make_response(render_template(
         'recs.html',
         items=tracks,
-        question=q,
-        srclink=srclink)
+        question=q))
+    uris = SpotifyPlaylist(q.alphanumeric_posttitle, tracks).uris
+    response.set_cookie(COOKIE_NAME, value=uris, max_age=None)
+    return response
 
 
 @app.route('/search', methods=['POST'])
@@ -76,14 +77,13 @@ def hit_button():
 @app.route('/playlist/redirect')
 def redirect_for_playlist():
     client_id = '4b63addadc0a4b45b0ae1f78531c2046'
-    redirect_uri = 'http://localhost:5000//playlist/create'
+    redirect_uri = url_for('create_playlist', _external=True)
     scopes = 'playlist-modify-public'
     qstr = {
         'client_id': client_id,
         'redirect_uri': redirect_uri,
         'scope': scopes,
-        'response_type': 'token',
-        # 'state': ask_me_id
+        'response_type': 'token'
     }
     return redirect(
         'https://accounts.spotify.com/authorize?{}'.format(urllib.urlencode(qstr)))
@@ -93,8 +93,7 @@ def create_playlist():
     error = request.args.get('error')
     if error:
         return render_template('spotify_error.html', error=error)
-    authorization_code = request.args.get('code')
-    state = request.args.get('state')
+    return render_template('playlist.html',uris=request.cookies.get(COOKIE_NAME), question=None)
 
 
 if __name__ == '__main__':

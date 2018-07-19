@@ -6,17 +6,16 @@
 </style>
 {% endblock %}
 {% block content %}
-{% if items|length > 1 %}
-    <h1>Playlist from <a href={{ question.url }}>{{ question.posttitle }}</a></h1>
-<p> I found {{ items|length }} songs reccomended in that thread:</p>
-    <ul id="navigation">
-        {% for item in items %}
-        <li><a href={{ item.uri }}>{{ item }}</a></li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Damn, I couldn't find any song recommendations at that link, sorry!</p>
-{% endif %}
+{% block javascript %}
+<div id="uris" data-uris={{ uris }}>
+    <script type="text/javascript">
+        console.log({{ uris }})
+        {% include "createPlaylist.js" %}
+    </script>
+    </div>
+{% endblock %}
+    <!-- <h1>Playlist from <a href={{ question.url }}>{{ question.posttitle }}</a></h1> -->
+    <iframe src="https://open.spotify.com/embed?uri=spotify:album:1DFixLWuPkv3KT3TnV35m3" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
 <br>
-<div>Click <a href={{ url_for('redirect_for_playlist') }}>here</a> to log in and turn this into a Spotify playlist</div>
+<div>Click <a onclick="unfollowPlaylist.js" }}>here</a> to unfollow this playlist.</div>
 {% endblock %}
